@@ -5,7 +5,7 @@ mod tests {
     use crate::scholar;
     #[test]
     fn new_scholar_query() {
-        let sc = scholar::ScholarArgs{
+        let sc = scholar::ScholarArgs {
             query: "machine-learning",
             cite_id: None,
             from_year: None,
@@ -25,7 +25,7 @@ mod tests {
 
     #[tokio::test]
     async fn scrape() {
-        let sc = scholar::ScholarArgs{
+        let sc = scholar::ScholarArgs {
             query: "machine-learning",
             cite_id: None,
             from_year: None,
