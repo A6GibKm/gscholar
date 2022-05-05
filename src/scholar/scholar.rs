@@ -102,7 +102,7 @@ impl Args for ScholarArgs {
            get_base_url(self.get_service())
         );
 
-       if self.query == "" {
+       if self.query.is_empty() {
            return Err(Error::RequiredFieldError);
        }
 
@@ -160,17 +160,17 @@ impl Args for ScholarArgs {
        if let Some(i) = self.include_similar_results {
            url.push_str("&filter=");
            if i {
-               url.push_str("1");
+               url.push('1');
            } else {
-               url.push_str("0");
+               url.push('0');
            }
        }
        if let Some(i) = self.include_citations {
            url.push_str("&as_vis=");
            if i {
-               url.push_str("1");
+               url.push('1');
            } else {
-               url.push_str("0");
+               url.push('0');
            }
        }
        Ok(url)
