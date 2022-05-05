@@ -11,7 +11,7 @@ pub struct Client {
 
 #[derive(Debug)]
 pub enum Error {
-    ConnectionError,
+    ConnectionError(String),
     ParseError,
     InvalidServiceError,
     RequiredFieldError,
@@ -21,7 +21,10 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        match self {
+            Self::ConnectionError(url) => write!(f, "Could not connect to {url}"),
+            _ => write!(f, "{:?}", self),
+        }
     }
 }
 
