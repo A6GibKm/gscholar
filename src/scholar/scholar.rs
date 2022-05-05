@@ -190,53 +190,48 @@ impl Client {
     async fn get_document(&self, url: &str) -> Result<String, Error> {
         let resp = self.client.get(url)
             .send()
-            .await;
-        if !resp.is_ok() {
-            return Err(Error::ConnectionError);
-        }
-        let val: String = resp.unwrap().text().await.unwrap();
+            .await
+            .map_err(|_err| Error::ConnectionError)?;
+        let val: String = resp.text().await.map_err(|_| Error::ParseError)?;
         Ok(val)
     }
 
     fn scrape_serialize(&self, document: String) -> Result<Vec<ScholarResult>, Error> {
         let fragment = Html::parse_document(&document[..]);
 
-        let article_selector = Selector::parse(".gs_ri").unwrap();
-        let title_selector = Selector::parse(".gs_rt").unwrap();
-        let abstract_selector = Selector::parse(".gs_rs").unwrap();
-        let author_selector = Selector::parse(".gs_a").unwrap();
-        let link_selector = Selector::parse("a").unwrap();
+        let article_selector = Selector::parse(".gs_ri").map_err(|_| Error::ParseError)?;
+        let title_selector = Selector::parse(".gs_rt").map_err(|_| Error::ParseError)?;
+        let abstract_selector = Selector::parse(".gs_rs").map_err(|_| Error::ParseError)?;
+        let author_selector = Selector::parse(".gs_a").map_err(|_| Error::ParseError)?;
+        let link_selector = Selector::parse("a").map_err(|_| Error::ParseError)?;
 
         let nodes = fragment.select(&article_selector).collect::<Vec<_>>();
 
         let response = nodes
             .chunks_exact(1)
-            .map(|rows| {
-                let title = rows[0].select(&title_selector)
+            .filter_map(|rows| {
+                let title = rows.get(0)?.select(&title_selector)
+                    .next()?;
+                let link = rows.get(0)?.select(&link_selector)
                     .next()
-                    .unwrap();
-                let link = rows[0].select(&link_selector)
-                    .next()
-                    .and_then(|n| n.value().attr("href"))
-                    .unwrap();
-                let abs = rows[0].select(&abstract_selector)
-                    .next()
-                    .unwrap();
-                let author = rows[0].select(&author_selector)
-                    .next()
-                    .unwrap();
+                    .and_then(|n| n.value().attr("href"))?;
+                let abs = rows.get(0)?.select(&abstract_selector)
+                    .next()?;
+                let author = rows.get(0)?.select(&author_selector)
+                    .next()?;
 
                 let ti = title.text().collect::<String>();
                 let ab = abs.text().collect::<String>();
                 let au = author.text().collect::<String>();
                 let li = link.to_string();
 
-                ScholarResult{
+                let result = ScholarResult{
                     title: ti,
                     author: au,
                     abs: ab,
                     link: li,
-                }
+                };
+                Some(result)
             }).collect::<Vec<ScholarResult>>();
 
         Ok(response)
