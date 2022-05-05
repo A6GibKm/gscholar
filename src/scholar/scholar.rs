@@ -1,3 +1,5 @@
+use std::fmt;
+
 extern crate reqwest;
 extern crate select;
 
@@ -7,6 +9,7 @@ pub struct Client {
      client: reqwest::Client,
 }
 
+#[derive(Debug)]
 pub enum Error {
     ConnectionError,
     ParseError,
@@ -15,6 +18,14 @@ pub enum Error {
     NotImplementedError,
     InvalidResponseError,
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for Error {}
 
 pub struct ScholarResult {
    pub title: String,
