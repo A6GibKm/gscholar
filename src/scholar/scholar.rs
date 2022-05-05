@@ -86,14 +86,15 @@ pub trait Args {
 
 impl Args for ScholarArgs {
     fn get_service(&self) -> Services {
-        return Services::Scholar;
+        Services::Scholar
     }
 
     fn get_limit(&self) -> usize {
         if let Some(s) = self.limit {
-            return s as usize
+            s as usize
+        } else {
+            0_usize
         }
-        return 0usize
     }
 
     fn get_url(&self) -> Result<String, Error> {
@@ -172,7 +173,7 @@ impl Args for ScholarArgs {
                url.push_str("0");
            }
        }
-       return Ok(url);
+       Ok(url)
     }
 }
 
@@ -200,7 +201,7 @@ impl Client {
             return Err(Error::ConnectionError);
         }
         let val: String = resp.unwrap().text().await.unwrap();
-        return Ok(val);
+        Ok(val)
     }
 
     fn scrape_serialize(&self, document: String) -> Result<Vec<ScholarResult>, Error> {
@@ -236,16 +237,15 @@ impl Client {
                 let au = author.text().collect::<String>();
                 let li = link.to_string();
 
-                let l = ScholarResult{
+                ScholarResult{
                     title: ti,
                     author: au,
                     abs: ab,
                     link: li,
-                };
-                l
+                }
             }).collect::<Vec<ScholarResult>>();
 
-        return Ok(response);
+        Ok(response)
     }
 
     pub async fn scrape_scholar(&self, args: &dyn Args) -> Result<Vec<ScholarResult>, Error> {
