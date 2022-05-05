@@ -38,7 +38,7 @@ pub struct ScholarResult {
 
 pub struct ScholarArgs {
     // q - required
-    pub query: &'static str,
+    pub query: String,
 
     // cites - citaction id to trigger "cited by"
     pub cite_id: Option<&'static str>,
@@ -93,7 +93,7 @@ impl ScholarArgs {
         }
 
         url.push_str("q=");
-        url.push_str(self.query);
+        url.push_str(&self.query);
 
         if let Some(i) = self.cite_id {
             url.push_str("&cites=");
