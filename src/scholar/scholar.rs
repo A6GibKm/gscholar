@@ -78,13 +78,7 @@ pub struct ScholarArgs {
    pub include_citations: Option<bool>,
 }
 
-pub trait Args {
-    fn get_service(&self) -> Services;
-    fn get_url(&self) -> Result<String, Error>;
-    fn get_limit(&self) -> usize;
-}
-
-impl Args for ScholarArgs {
+impl ScholarArgs {
     fn get_service(&self) -> Services {
         Services::Scholar
     }
@@ -248,23 +242,11 @@ impl Client {
         Ok(response)
     }
 
-    pub async fn scrape_scholar(&self, args: &dyn Args) -> Result<Vec<ScholarResult>, Error> {
-        let url: String;
-        match args.get_url() {
-            Ok(u) => url = u,
-            Err(e) => return Err(e),
-        };
-        
-        let doc: String;
-        match self.get_document(&url[..]).await {
-            Ok(page) => doc = page,
-            Err(e) => return Err(e),
-        };
+    pub async fn scrape_scholar(&self, args: &ScholarArgs) -> Result<Vec<ScholarResult>, Error> {
+        let url = args.get_url()?;
+        let doc = self.get_document(&url[..]).await?;
 
-        match self.scrape_serialize(doc) {
-            Ok(result) => return Ok(result),
-            Err(e) => return Err(e),
-        };
+        self.scrape_serialize(doc)
     }
 }
 
